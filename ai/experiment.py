@@ -6,13 +6,15 @@ from event import Event
 
 
 class Experiment:
-    def __init__(self,
+    def __init__(self, 
+                 id: str,
                  name: str,
                  ai_agents: List[AIAgent],
                  max_length: int,
                  description=None,
                  db_connection_str = None
             ):
+        self.id: str = id   
         self.name: str = name
         self.description: str = description
         self.max_length: int = max_length
@@ -51,3 +53,7 @@ class Experiment:
     def _execute_agent(self, agent: AIAgent, old_events: List[Event], **kwargs) -> None:
         generated_events: Optional[List[Event]] = agent.react_on_events(old_events)
         kwargs["new_events"].extend(generated_events or [])
+
+if __name__ == "__main__":
+    formatted_string = "Your name is {name} and I love {hobby}.".format(name="Bob", hobby="coding")
+    print(formatted_string)

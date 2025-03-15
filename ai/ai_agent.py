@@ -6,10 +6,10 @@ from event import Event, parse_event
 
 
 class AIAgent(ABC, AutoID):
-    def __init__(self, name: str, instructions: str, image: Optional[bytes] = None):
+    def __init__(self, experiment_id: str, name: str, instructions: str, image: Optional[bytes] = None):
         super().__init__()
-
-        self.name = name
+        self.experiment_id: str = experiment_id
+        self.name: str = name
         self.image: Optional[bytes] = image
         self.instructions: str = self._modify_instructions(instructions.format(name=name))
 
