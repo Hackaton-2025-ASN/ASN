@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Tuple
 
 from ai.utils import extract_placeholders
 from auto_id import AutoID
 from comment import Comment
 from post import Post
 
+
+Tup = Tuple[int, Optional[int], Optional[int], Optional[str], Optional[bytes], Optional[int], Optional[int], Optional[int]]
 
 class Event(ABC, AutoID):
 
@@ -18,6 +20,9 @@ class Event(ABC, AutoID):
 
     @classmethod
     def from_string(cls, string: str, user_id: int) -> 'Event':
+        ...
+
+    def to_tuple(self) -> Tup:
         ...
 
 
@@ -49,6 +54,19 @@ class PostEvent(Event):
         except ValueError as e:
             print(string)
             raise ValueError(f"Invalid PostEvent string: {string}") from e
+
+    def to_tuple(self) -> Tup:
+        return (
+            self.id,
+            1,
+            self.user_id,
+            self.post.id,
+            self.post.content,
+            self.post.image,
+            None,
+            None
+        )
+
 
 
 class CommentEvent(Event):
@@ -82,6 +100,18 @@ class CommentEvent(Event):
         except ValueError as e:
             raise ValueError(f"Invalid CommentEvent string: {string}") from e
 
+    def to_tuple(self) -> Tup:
+        return (
+            self.id,
+            2,
+            self.user_id,
+            self.comment.id,
+            self.comment.content,
+            None,
+            None,
+            None
+        )
+
 
 class LikeEvent(Event):
     def __init__(self, user_id: int, post_id: int, id: Optional[int] = None):
@@ -103,6 +133,18 @@ class LikeEvent(Event):
             return LikeEvent(user_id=user_id, post_id=int(groups_event["post_id"]))
         except ValueError as e:
             raise ValueError(f"Invalid LikeEvent string: {string}") from e
+
+    def to_tuple(self) -> Tup:
+        return (
+            self.id,
+            3,
+            self.user_id,
+            self.post_id,
+            None,
+            None,
+            None,
+            None
+        )
 
 
 class DislikeEvent(Event):
@@ -126,6 +168,18 @@ class DislikeEvent(Event):
         except ValueError as e:
             raise ValueError(f"Invalid DislikeEvent string: {string}") from e
 
+    def to_tuple(self) -> Tup:
+        return (
+            self.id,
+            4,
+            self.user_id,
+            self.post_id,
+            None,
+            None,
+            None,
+            None
+        )
+
 
 class FollowEvent(Event):
     def __init__(self, follower_id: int, followee_id: int):
@@ -147,6 +201,18 @@ class FollowEvent(Event):
             return FollowEvent(follower_id=user_id, followee_id=int(groups_event["followee_id"]))
         except ValueError as e:
             raise ValueError(f"Invalid FollowEvent string: {string}") from e
+
+    def to_tuple(self) -> Tup:
+        return (
+            self.id,
+            5,
+            None,
+            None,
+            None,
+            None,
+            self.follower_id,
+            self.followee_id
+        )
 
 
 def parse_event(string: str, user_id: int) -> Event:
