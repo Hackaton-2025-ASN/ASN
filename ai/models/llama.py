@@ -7,6 +7,7 @@ from ai.ai_agent import AIAgent
 
 class LlamaAIAgent(AIAgent):
     model_name: str = "llama2-uncensored:7b-chat"
+    context_window: int = 12
 
     def __init__(self, experiment_id: str, name: str, instructions: str, image: Optional[bytes] = None):
         """
@@ -14,18 +15,19 @@ class LlamaAIAgent(AIAgent):
         """
         super().__init__(experiment_id, name, instructions, image)
 
-    def _prompt_model(self, prompt: str) -> Optional[str]:
-        response = self._generate_response(prompt, chat_mode=True)
+        self.conversation_history = []
 
-        return response
+    def _prompt_model(self, prompt: str) -> Optional[str]:
+        response = self._generate_response(prompt)
+        return response if response else None
     
     def _generate_response(self,
                     prompt: str,
-                    temperature=0.7,
-                    top_p=0.9,
-                    max_tokens=256,
-                    chat_mode=False
-                            ):
+                    temperature: float = 0.0,
+                    top_p: float = 0.0,
+                    max_tokens: int = 8192,
+                    chat_mode: bool = True
+                            ) -> str:
         """
         Sends a prompt to the running Ollama server and returns the generated text.
         
@@ -42,8 +44,16 @@ class LlamaAIAgent(AIAgent):
             "stream": False
         }
 
+        self.conversation_history.append({'role': 'user', 'content': prompt})
+
+        if len(self.conversation_history) > self.context_window:
+            self.conversation_history = self.conversation_history[:2] + \
+                                        self.conversation_history[-self.context_window + 2:]
+        else:
+            self.conversation_history = self.conversation_history[-self.context_window:]
+
         if chat_mode:
-            request_body["messages"] = [{"role": "user", "content": prompt}]
+            request_body["messages"] = self.conversation_history
         else:
             request_body["prompt"] = prompt
 
