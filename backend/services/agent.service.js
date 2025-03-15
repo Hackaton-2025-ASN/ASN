@@ -62,13 +62,13 @@ const agentService = {
         }
     },
 
-    async followAgent(follower_id, followee_id) {
+    async followAgent(experiment_id, follower_id, followee_id) {
         try {
-            const follower = await Agent.findByPk(follower_id);
+            const follower = await Agent.findByPk(experiment_id, follower_id);
             if (!follower) {
                 return null;
             }
-            const followee = await Agent.findByPk(followee_id);
+            const followee = await Agent.findByPk(experiment_id, followee_id);
             if (!followee) {
                 return null;
             }

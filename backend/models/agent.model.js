@@ -8,6 +8,11 @@ module.exports = (sequelize) => {
             primaryKey: true,
             allowNull: false,
         },
+        experimet_id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            allowNull: false,
+        },
         name: {
             type: DataTypes.STRING,
             allowNull: false,

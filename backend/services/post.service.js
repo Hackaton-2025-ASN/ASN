@@ -12,9 +12,9 @@ postService.createPost = async ({experiment_id, post_id, image, content, agent_i
     }
 };
 
-postService.likePost = async (post_id) => {
+postService.likePost = async ({experiment_id, agent_id, post_id}) => {
     try {
-        const post = await Post.findOne({ where: { post_id } });
+        const post = await Post.findOne({ where: { experiment_id, agent_id, post_id } });
 
         if (!post) {
             throw new Error(`Post with ID ${post_id} not found.`);
@@ -29,9 +29,9 @@ postService.likePost = async (post_id) => {
     }
 }
 
-postService.dislikePost = async (post_id) => {
+postService.dislikePost = async ({experiment_id, agent_id, post_id}) => {
     try {
-        const post = await Post.findOne({ where: { post_id } });
+        const post = await Post.findOne({ where: { experience_id, agent_id, post_id } });
 
         if (!post) {
             throw new Error(`Post with ID ${post_id} not found.`);

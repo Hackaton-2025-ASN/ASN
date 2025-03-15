@@ -1,7 +1,9 @@
 const db = require('../models');
 const EventStream = db['EventStream'];
 const eventStreamService = {};
-//postservice, comment service, agent service (follow unfollow)
+const postService = require('./post.service');
+const commentService = require('./comment.service');
+const agentService = require('./agent.service');
 
 eventStreamService.storeEvent = async ({ experiment_id, timestep, id, type, user_id, post_id, content, image, follower_id, followee_id }) => {
     try {
@@ -29,23 +31,23 @@ eventStreamService.applyEvent = async (event) => {
 
     if (type === 1) {
         // Create a post
-        console.log(`User ${user_id} created a post: ${content}`);
+        await postService.createPost({ experiment_id, post_id, image, content, agent_id: user_id });
     }
     else if (type === 2) {
         // Comment on a post
-        console.log(`User ${user_id} liked post ${post_id}`);
+        await commentService.create({ content, agent_id: user_id, post_id });
     }
     else if (type === 3) {
         // Like a post
-        console.log(`User ${user_id} commented on post ${post_id}: ${content}`);
+        await postService.likePost({experiment_id, agent_id, post_id});
     }
     else if (type === 4) {
         // Dislike a post
-        console.log(`User ${user_id} followed user ${followee_id}`);
+        await postService.dislikePost({experiment_id, agent_id, post_id});
     }
     else if (type === 5) {
         // Follow another user
-        console.log(`User ${user_id} unfollowed user ${followee_id}`);
+        await agentService.followAgent({experiment_id, follower_id, followee_id});
     }
     else {
         console.log('Unknown event type');

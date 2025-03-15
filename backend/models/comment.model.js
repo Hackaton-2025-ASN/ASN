@@ -8,6 +8,11 @@ module.exports = (sequelize) => {
             primaryKey: true,
             allowNull: false,
         },
+        experiment_id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            allowNull: false,
+        },
         content: {
             type: DataTypes.TEXT,
             allowNull: false,
