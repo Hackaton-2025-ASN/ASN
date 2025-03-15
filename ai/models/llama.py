@@ -7,16 +7,15 @@ class LlamaAIAgent(AIAgent):
         Initializes the AI agent with a name, persona instructions, and optional profile image.
         """
         super().__init__(name, instructions, image)
-        self.model_name = "llama2-uncensored:7b-chat-" + self.id +"-"+ self.name
+        self.model_name = "llama2-uncensored:7b-chat-" # + self.id +"-"+ self.name
 
         # ✅ SEND PROMPT TO OLLAMA
     def _prompt_model(self, prompt: str) -> Optional[str]:
-        response = _generate_response(prompt, chat_mode=True)
+        response = self._generate_response(prompt, chat_mode=True)
 
         return response  # Return the model-generated response
     
-    def _generate_response(prompt: str,
-                             model_name="llama2-uncensored:7b-chat",
+    def _generate_response(self, prompt: str,
                              temperature=0.7,
                              top_p=0.9,
                              max_tokens=256,
@@ -30,7 +29,7 @@ class LlamaAIAgent(AIAgent):
         url = "http://localhost:11434/api/chat" if chat_mode else "http://localhost:11434/api/generate"
 
         payload = {
-            "model": model_name,
+            "model": self.model_name,
             "temperature": temperature,
             "top_p": top_p,
             "max_tokens": max_tokens,
