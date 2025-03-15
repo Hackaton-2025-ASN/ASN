@@ -26,3 +26,4 @@ class AIAgent(ABC, AutoID):
     @abstractmethod
     def _prompt_model(self, prompt: str) -> Optional[str]:
         ...
+
