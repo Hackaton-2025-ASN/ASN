@@ -47,6 +47,7 @@ class PostEvent(Event):
 
             return PostEvent(user_id=int(groups_event["user_id"]), post=post)
         except ValueError as e:
+            print(string)
             raise ValueError(f"Invalid PostEvent string: {string}") from e
 
 
@@ -68,7 +69,7 @@ class CommentEvent(Event):
 
         groups_comment = extract_placeholders(
             "Comment(id={id}, post_id={post_id}, content={content})",
-            groups_event["post"]
+            groups_event["comment"]
         )
 
         if not groups_comment:

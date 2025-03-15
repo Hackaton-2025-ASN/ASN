@@ -34,26 +34,45 @@ class Experiment:
             self._send_events_to_db(new_events)
             old_events = new_events
 
-    @abstractmethod
     def _connect_to_db(self, db_connection_str: str):
         return db_connection_str
 
-    @abstractmethod
     def _send_events_to_db(self, events: List[Event]):
         print(f"Sending {len(events)} events to the database:")
         for event in events:
             print(f" - {event}")
 
-    @abstractmethod
     def _foreach_agent(self, agents: List[AIAgent], fn: Callable[[AIAgent],None]) -> None:
         for ai_agent in agents:
             fn(ai_agent)
 
-    @abstractmethod
     def _execute_agent(self, agent: AIAgent, old_events: List[Event], **kwargs) -> None:
         generated_events: Optional[List[Event]] = agent.react_on_events(old_events)
         kwargs["new_events"].extend(generated_events or [])
 
+
 if __name__ == "__main__":
-    formatted_string = "Your name is {name} and I love {hobby}.".format(name="Bob", hobby="coding")
-    print(formatted_string)
+    from models.llama import LlamaAIAgent
+    from event import Event
+
+    instructions = "You are a friendly, upbeat, and outgoing person. " \
+                   "You have an optimistic outlook on life and always " \
+                   "try to see the best in every situation. You love " \
+                   "engaging in conversations about pop culture, books, " \
+                   "and everyday life. Your tone is warm, humorous, " \
+                   "and sometimes witty, but always respectful and inclusive. " \
+                   "You enjoy sharing your opinions in a natural, conversational " \
+                   "style without sounding forced. You’re curious and thoughtful, " \
+                   "often adding insightful comments or playful jokes when responding to others."
+    ai_agents = [LlamaAIAgent("123", "agent1", instructions + " You should post something in this response."),
+                 LlamaAIAgent("123", "agent2", instructions)]
+
+    experiment = Experiment(
+        id="123",
+        name="Test Experiment",
+        description="This is a test experiment",
+        ai_agents=ai_agents,
+        max_length=2,
+        db_connection_str="localhost:5432"
+    )
+    experiment.perform()
