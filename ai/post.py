@@ -1,6 +1,6 @@
 from typing import Optional
 
-from auto_id import AutoID
+from .auto_id import AutoID
 
 
 class Post(AutoID):

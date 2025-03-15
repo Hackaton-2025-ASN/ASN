@@ -1,49 +1,60 @@
-from abc import abstractmethod
+import openai
+import os
 from typing import List, Optional, Callable
 
-from ai.ai_agent import AIAgent
-from ai.user import User
-from event import Event
+# If your code references ai_agent, keep it
+from .ai_agent import AIAgent
+from .user import User
+from .event import Event
+
+# Import our new GPT-based agent
+from .models.gpt_agent import GPT4AIAgent
 
 
 class Experiment:
-    def __init__(self, 
-                 id: str,
-                 name: str,
-                 ai_agents: List[AIAgent],
-                 max_length: int,
-                 description=None,
-                 db_connection_str = None
-            ):
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        ai_agents: List[AIAgent],
+        max_length: int,
+        description: Optional[str] = None,
+        db_connection_str: Optional[str] = None
+    ):
         self.id: str = id   
         self.name: str = name
         self.description: str = description
         self.max_length: int = max_length
         self.db_connection_str: str = self._connect_to_db(db_connection_str)
-
         self.ai_agents: List[AIAgent] = ai_agents
 
     def perform(self):
         old_events: List[Event] = []
-        new_events: List[Event]
+        new_events: List[Event] = []
+
         for step in range(self.max_length):
-            new_events = []
+
+            new_events.clear()
             self._foreach_agent(
                 self.ai_agents,
                 lambda agent: self._execute_agent(agent, old_events, new_events=new_events)
             )
-            self._send_events_to_db(new_events)
-            old_events = new_events
 
-    def _connect_to_db(self, db_connection_str: str):
-        return db_connection_str
+            self._send_events_to_db(new_events)
+
+            old_events = list(new_events)  # Ensure a copy is made
+
+
+    def _connect_to_db(self, db_connection_str: Optional[str]) -> str:
+        # Stub function to simulate DB connection
+        return db_connection_str if db_connection_str else ""
 
     def _send_events_to_db(self, events: List[Event]):
         print(f"Sending {len(events)} events to the database:")
         for event in events:
             print(f" - {event}")
 
-    def _foreach_agent(self, agents: List[AIAgent], fn: Callable[[AIAgent],None]) -> None:
+    def _foreach_agent(self, agents: List[AIAgent], fn: Callable[[AIAgent], None]) -> None:
         for ai_agent in agents:
             fn(ai_agent)
 
@@ -53,9 +64,9 @@ class Experiment:
 
 
 if __name__ == "__main__":
-    from models.llama import LlamaAIAgent
-    from event import Event
-
+    
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    # 2) Define each persona's instructions
     instructions = [
         "You are a confident, enigmatic, and deeply philosophical individual. " + \
         "You embrace the mysteries of life with unwavering self-assurance and a keen intellect. " + \
@@ -88,18 +99,23 @@ if __name__ == "__main__":
         "Your posts are provocative and designed to spark debate, while your likes and dislikes strategically underscore your dissent. " + \
         "You engage in a way that consistently pushes boundaries and invites critical discussion.",
     ]
-    ai_agents = [LlamaAIAgent("123", f"agent{i}", instructions[i] + " You SHOULDN'T post anything in the next response.")
-                  for i in range(7)]
 
-    users: List[User] = []
-    for agent in ai_agents:
-        users.append(User(id=agent.id, name=agent.name))
+    # 3) Create GPT-4 agents with unique instructions
+    ai_agents = [
+        GPT4AIAgent("123", f"agent{i}", instructions[i])
+        for i in range(len(instructions))
+    ]
 
+    # 4) Convert each agent to a 'User' (for the user DB)
+    users: List[User] = [User(id=agent.id, name=agent.name) for agent in ai_agents]
     user_db: str = "[" + ", ".join([str(user) for user in users]) + "]"
+
+    # 5) Supply the user DB to each agent, then prepare them
     for agent in ai_agents:
         agent.add_user_db(user_db)
         agent.prepare()
 
+    # 6) Create & run the experiment
     experiment = Experiment(
         id="123",
         name="Test Experiment",

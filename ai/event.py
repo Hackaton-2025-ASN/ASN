@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Optional, Tuple
 
 from ai.utils import extract_placeholders
-from auto_id import AutoID
-from comment import Comment
-from post import Post
+from .auto_id import AutoID
+from .comment import Comment
+from .post import Post
 
 
 Tup = Tuple[int, Optional[int], Optional[int], Optional[str], Optional[bytes], Optional[int], Optional[int], Optional[int]]
