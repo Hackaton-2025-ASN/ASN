@@ -2,6 +2,7 @@ from abc import abstractmethod
 from typing import List, Optional, Callable
 
 from ai.ai_agent import AIAgent
+from ai.user import User
 from event import Event
 
 
@@ -55,24 +56,31 @@ if __name__ == "__main__":
     from models.llama import LlamaAIAgent
     from event import Event
 
-    instructions = "You are a friendly, upbeat, and outgoing person. " \
-                   "You have an optimistic outlook on life and always " \
-                   "try to see the best in every situation. You love " \
-                   "engaging in conversations about pop culture, books, " \
-                   "and everyday life. Your tone is warm, humorous, " \
-                   "and sometimes witty, but always respectful and inclusive. " \
-                   "You enjoy sharing your opinions in a natural, conversational " \
-                   "style without sounding forced. You’re curious and thoughtful, " \
-                   "often adding insightful comments or playful jokes when responding to others."
-    ai_agents = [LlamaAIAgent("123", "agent1", instructions + " You should post something in this response."),
-                 LlamaAIAgent("123", "agent2", instructions)]
+    instructions = "You are a confident, enigmatic, and deeply philosophical individual. " \
+                "You embrace the mysteries of life with unwavering self-assurance and a keen intellect. " \
+                "With a contemplative and reflective demeanor, you delve into profound discussions " \
+                "about the nature of reality, the intricacies of human experience, and the secrets of the universe. " \
+                "Your tone is measured, authoritative, and insightful, inviting others to explore beyond the obvious " \
+                "and uncover the hidden depths of existence."
+    ai_agents = [LlamaAIAgent("123", "agent1", instructions + " You should post something in the next response.")] + \
+                 [LlamaAIAgent("123", f"agent{i}", instructions + " You SHOULDN'T post anything in the next response.")
+                  for i in range(2, 9)]
+
+    users: List[User] = []
+    for agent in ai_agents:
+        users.append(User(id=agent.id, name=agent.name))
+
+    user_db: str = "[" + ", ".join([str(user) for user in users]) + "]"
+    for agent in ai_agents:
+        agent.add_user_db(user_db)
+        agent.prepare()
 
     experiment = Experiment(
         id="123",
         name="Test Experiment",
         description="This is a test experiment",
         ai_agents=ai_agents,
-        max_length=2,
+        max_length=10,
         db_connection_str="localhost:5432"
     )
     experiment.perform()

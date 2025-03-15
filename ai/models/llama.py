@@ -6,7 +6,7 @@ from ai.ai_agent import AIAgent
 
 
 class LlamaAIAgent(AIAgent):
-    model_name: str = "llama2-uncensored:7b-chat"
+    model_name: str = "llama-pro"
     context_window: int = 12
 
     def __init__(self, experiment_id: str, name: str, instructions: str, image: Optional[bytes] = None):
@@ -23,9 +23,9 @@ class LlamaAIAgent(AIAgent):
     
     def _generate_response(self,
                     prompt: str,
-                    temperature: float = 0.0,
-                    top_p: float = 0.0,
-                    max_tokens: int = 8192,
+                    temperature: float = 0.1,
+                    top_p: float = 0.05,
+                    max_tokens: int = 16192,
                     chat_mode: bool = True
                             ) -> str:
         """
