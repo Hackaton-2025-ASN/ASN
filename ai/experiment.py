@@ -6,7 +6,13 @@ from event import Event
 
 
 class Experiment:
-    def __init__(self, name: str, ai_agents: List[AIAgent], max_length: int, description=None, db_connection_str = None):
+    def __init__(self,
+                 name: str,
+                 ai_agents: List[AIAgent],
+                 max_length: int,
+                 description=None,
+                 db_connection_str = None
+            ):
         self.name: str = name
         self.description: str = description
         self.max_length: int = max_length

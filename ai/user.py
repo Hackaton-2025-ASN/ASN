@@ -4,7 +4,9 @@ from ai.auto_id import AutoID
 
 
 class User(AutoID):
-    def __init__(self, user_id: int, name: str, id: Optional[int]=None):
+    def __init__(self, name: str, id: Optional[int] = None):
         super().__init__(id=id)
-        self.user_id: int = user_id
         self.name: str = name
+
+    def __str__(self) -> str:
+        return f"User(id={self.id}, name={self.name})"
