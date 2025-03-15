@@ -75,7 +75,8 @@ Below is the current discussion:
 {forum_text}
 
 Please reply to the above discussion in character as {agent_name}, referencing the forum posts if needed.
-Keep it short, friendly, and natural. Do not include extra disclaimers.
+Keep it short, friendly, and natural. Do not include extra disclaimers. Do not say anything else besides your response and what you respond to.
+For example, Post: "I agree",  
     """.strip()
 
 # 6) Main logic: simply prompt each agent, see their response
