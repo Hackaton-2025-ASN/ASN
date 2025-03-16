@@ -1,6 +1,7 @@
 import os
 from typing import List
 
+import openai
 from pymongo import MongoClient
 from bson import ObjectId
 
@@ -18,6 +19,7 @@ class DBProxy:
         db.events.insert_many([event for event in events])
 
     def get_ai_agents(self, experiment_id: str) -> List[AIAgent]:
+        openai.api_key = os.getenv("OPENAI_API_KEY")
         db = self.client.get_database("test")
 
         result = list(db["agents"].find({"experimentId": ObjectId(experiment_id)}))
