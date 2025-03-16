@@ -43,9 +43,9 @@ class Experiment:
             old_events = list(new_events)  # Ensure a copy is made
 
     def _send_events_to_db(self, events: List[Event], time_step: int):
-        # print(f"Sending {len(events)} events to the database:")
-        # for event in events:
-        #     print(f" - {event}")
+        print(f"Sending {len(events)} events to the database:")
+        for event in events:
+          print(f" - {event}")
         self.db_proxy.insert_event_batch(events, self.id, time_step)
 
     def _foreach_agent(self, agents: List[AIAgent], fn: Callable[[AIAgent], None]) -> None:
