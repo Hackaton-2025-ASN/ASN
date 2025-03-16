@@ -4,6 +4,7 @@ from typing import List, Optional, Callable
 
 # If your code references ai_agent, keep it
 from ai.ai_agent import AIAgent
+from ai.db import DBProxy
 from ai.user import User
 from ai.event import Event
 
@@ -18,12 +19,11 @@ class Experiment:
         name: str,
         ai_agents: List[AIAgent],
         max_length: int,
-        db_connection_str: Optional[str] = None
     ):
         self.id: str = id   
         self.name: str = name
         self.max_length: int = max_length
-        self.db_connection_str: str = self._connect_to_db(db_connection_str)
+        self.db_proxy: DBProxy = DBProxy()
         self.ai_agents: List[AIAgent] = ai_agents
 
     def perform(self):
@@ -38,18 +38,15 @@ class Experiment:
                 lambda agent: self._execute_agent(agent, old_events, new_events=new_events)
             )
 
-            self._send_events_to_db(new_events)
+            self._send_events_to_db(new_events, step)
 
             old_events = list(new_events)  # Ensure a copy is made
 
-    def _connect_to_db(self, db_connection_str: Optional[str]) -> str:
-        # Stub function to simulate DB connection
-        return db_connection_str if db_connection_str else ""
-
-    def _send_events_to_db(self, events: List[Event]):
-        print(f"Sending {len(events)} events to the database:")
-        for event in events:
-            print(f" - {event}")
+    def _send_events_to_db(self, events: List[Event], time_step: int):
+        # print(f"Sending {len(events)} events to the database:")
+        # for event in events:
+        #     print(f" - {event}")
+        self.db_proxy.insert_event_batch(events, self.id, time_step)
 
     def _foreach_agent(self, agents: List[AIAgent], fn: Callable[[AIAgent], None]) -> None:
         for ai_agent in agents:
@@ -116,9 +113,7 @@ if __name__ == "__main__":
     experiment = Experiment(
         id="123",
         name="Test Experiment",
-        description="This is a test experiment",
         ai_agents=ai_agents,
         max_length=10,
-        db_connection_str="localhost:5432"
     )
     experiment.perform()

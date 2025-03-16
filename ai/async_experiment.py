@@ -16,10 +16,8 @@ class AsyncExperiment(Experiment):
                  name: str,
                  ai_agents: List[AIAgent],
                  max_length: int,
-                 description: Optional[str] = None,
-                 db_connection_str: Optional[str] = None
                  ):
-        super().__init__(id, name, ai_agents, max_length, description, db_connection_str)
+        super().__init__(id, name, ai_agents, max_length)
 
     async def perform(self):
         old_events: List["Event"] = []
@@ -36,7 +34,7 @@ class AsyncExperiment(Experiment):
                      )
             )
 
-            self._send_events_to_db(new_events)
+            self._send_events_to_db(new_events, step)
             old_events = list(new_events)  # Ensure a copy is made
 
     async def _foreach_agent(self, agents: List[AIAgent], fn: Callable[[AIAgent], None]) -> None:
@@ -103,9 +101,7 @@ if __name__ == "__main__":
     experiment = AsyncExperiment(
         id="123",
         name="Test Experiment",
-        description="This is a test experiment",
         ai_agents=ai_agents,
         max_length=10,
-        db_connection_str="localhost:5432"
     )
     asyncio.run(experiment.perform())

@@ -14,9 +14,26 @@ class DBProxy:
     def __init__(self):
         self.client = MongoClient(os.getenv("MONG_DB_CONN"))
 
-    def insert_event_batch(self, events: List[Event]):
+    def insert_event_batch(self, events: List[Event], experiment_id: str, time_step: int):
         db = self.client["eventstreams"]
-        db.events.insert_many([event for event in events])
+        data = []
+        for event in events:
+            tup = event.to_tuple()
+            data.append(
+                {
+                    "experimentId": ObjectId(experiment_id),
+                    "timeStep": time_step,
+                    "id": tup[0],
+                    "type": tup[1],
+                    "userId": ObjectId(tup[2]),
+                    "postId": tup[3], # commentId
+                    "content": tup[4],
+                    "image": None,
+                    "followerId": ObjectId(tup[6]),
+                    "followeeId": ObjectId(tup[7]),
+                }
+            )
+        db.events.insert_many(data)
 
     def get_ai_agents(self, experiment_id: str) -> List[AIAgent]:
         openai.api_key = os.getenv("OPENAI_API_KEY")
