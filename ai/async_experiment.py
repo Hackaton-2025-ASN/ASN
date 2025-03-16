@@ -1,67 +1,54 @@
-import openai
-import os
-from typing import List, Optional, Callable
+import asyncio
+from typing import List, Optional, Callable, cast
 
-# If your code references ai_agent, keep it
-from ai.ai_agent import AIAgent
+import openai as openai
+
+from models.gpt_agent import GPT4AIAgent
 from ai.user import User
+from ai.ai_agent import AIAgent
 from ai.event import Event
-
-# Import our new GPT-based agent
-from ai.models.gpt_agent import GPT4AIAgent
+from ai.experiment import Experiment
 
 
-class Experiment:
-    def __init__(
-        self,
-        id: str,
-        name: str,
-        ai_agents: List[AIAgent],
-        max_length: int,
-        db_connection_str: Optional[str] = None
-    ):
-        self.id: str = id   
-        self.name: str = name
-        self.max_length: int = max_length
-        self.db_connection_str: str = self._connect_to_db(db_connection_str)
-        self.ai_agents: List[AIAgent] = ai_agents
+class AsyncExperiment(Experiment):
+    def __init__(self,
+                 id: str,
+                 name: str,
+                 ai_agents: List[AIAgent],
+                 max_length: int,
+                 description: Optional[str] = None,
+                 db_connection_str: Optional[str] = None
+                 ):
+        super().__init__(id, name, ai_agents, max_length, description, db_connection_str)
 
-    def perform(self):
-        old_events: List[Event] = []
-        new_events: List[Event] = []
+    async def perform(self):
+        old_events: List["Event"] = []
+        new_events: List["Event"] = []
 
         for step in range(self.max_length):
-
             new_events.clear()
-            self._foreach_agent(
+
+            # Run agents asynchronously in parallel
+            await self._foreach_agent(
                 self.ai_agents,
-                lambda agent: self._execute_agent(agent, old_events, new_events=new_events)
+                cast(Callable[[AIAgent], None],
+                     lambda agent: self._execute_agent(agent, old_events, new_events=new_events)
+                     )
             )
 
             self._send_events_to_db(new_events)
-
             old_events = list(new_events)  # Ensure a copy is made
 
-    def _connect_to_db(self, db_connection_str: Optional[str]) -> str:
-        # Stub function to simulate DB connection
-        return db_connection_str if db_connection_str else ""
+    async def _foreach_agent(self, agents: List[AIAgent], fn: Callable[[AIAgent], None]) -> None:
+        await asyncio.gather(*(fn(ai_agent) for ai_agent in agents))
 
-    def _send_events_to_db(self, events: List[Event]):
-        print(f"Sending {len(events)} events to the database:")
-        for event in events:
-            print(f" - {event}")
-
-    def _foreach_agent(self, agents: List[AIAgent], fn: Callable[[AIAgent], None]) -> None:
-        for ai_agent in agents:
-            fn(ai_agent)
-
-    def _execute_agent(self, agent: AIAgent, old_events: List[Event], **kwargs) -> None:
+    async def _execute_agent(self, agent: AIAgent, old_events: List[Event], **kwargs) -> None:
         generated_events: Optional[List[Event]] = agent.react_on_events(old_events)
         kwargs["new_events"].extend(generated_events or [])
 
 
 if __name__ == "__main__":
-    
+    import openai, os
     openai.api_key = os.getenv("OPENAI_API_KEY")
     # 2) Define each persona's instructions
     instructions = [
@@ -113,7 +100,7 @@ if __name__ == "__main__":
         agent.prepare()
 
     # 6) Create & run the experiment
-    experiment = Experiment(
+    experiment = AsyncExperiment(
         id="123",
         name="Test Experiment",
         description="This is a test experiment",
@@ -121,4 +108,4 @@ if __name__ == "__main__":
         max_length=10,
         db_connection_str="localhost:5432"
     )
-    experiment.perform()
+    asyncio.run(experiment.perform())
