@@ -7,7 +7,7 @@ from .comment import Comment
 from .post import Post
 
 
-Tup = Tuple[int, Optional[int], Optional[int], Optional[str], Optional[bytes], Optional[int], Optional[int], Optional[int]]
+Tup = Tuple[int, Optional[int], Optional[str], Optional[str], Optional[bytes], Optional[int], Optional[str], Optional[str]]
 
 class Event(ABC, AutoID):
 
@@ -19,7 +19,7 @@ class Event(ABC, AutoID):
         ...
 
     @classmethod
-    def from_string(cls, string: str, user_id: int) -> 'Event':
+    def from_string(cls, string: str, user_id: str) -> 'Event':
         ...
 
     def to_tuple(self) -> Tup:
@@ -27,16 +27,16 @@ class Event(ABC, AutoID):
 
 
 class PostEvent(Event):
-    def __init__(self, user_id: int, post: Post, id: Optional[int] = None):
+    def __init__(self, user_id: str, post: Post, id: Optional[int] = None):
         super().__init__(id=id)
-        self.user_id: int = user_id
+        self.user_id: str = user_id
         self.post: Post = post
 
     def __str__(self) -> str:
         return f"PostEvent(user_id={self.user_id}, post={self.post})"
 
     @classmethod
-    def from_string(cls, string: str, user_id: int) -> 'PostEvent':
+    def from_string(cls, string: str, user_id: str) -> 'PostEvent':
         groups_event = extract_placeholders("PostEvent(user_id={user_id}, post={post})", string)
 
         if not groups_event:
@@ -70,16 +70,16 @@ class PostEvent(Event):
 
 
 class CommentEvent(Event):
-    def __init__(self, user_id: int, comment: Comment, id: Optional[int] = None):
+    def __init__(self, user_id: str, comment: Comment, id: Optional[int] = None):
         super().__init__(id=id)
-        self.user_id: int = user_id
+        self.user_id: str = user_id
         self.comment: Comment = comment
 
     def __str__(self) -> str:
         return f"CommentEvent(user_id={self.user_id}, comment={self.comment})"
 
     @classmethod
-    def from_string(cls, string: str, user_id: int) -> 'CommentEvent':
+    def from_string(cls, string: str, user_id: str) -> 'CommentEvent':
         groups_event = extract_placeholders("CommentEvent(user_id={user_id}, comment={comment})", string)
 
         if not groups_event:
@@ -114,16 +114,16 @@ class CommentEvent(Event):
 
 
 class LikeEvent(Event):
-    def __init__(self, user_id: int, post_id: int, id: Optional[int] = None):
+    def __init__(self, user_id: str, post_id: int, id: Optional[int] = None):
         super().__init__(id=id)
-        self.user_id: int = user_id
+        self.user_id: str = user_id
         self.post_id: int = post_id
 
     def __str__(self) -> str:
         return f"LikeEvent(user_id={self.user_id}, post_id={self.post_id})"
 
     @classmethod
-    def from_string(cls, string: str, user_id: int) -> 'LikeEvent':
+    def from_string(cls, string: str, user_id: str) -> 'LikeEvent':
         groups_event = extract_placeholders("LikeEvent(user_id={user_id}, post_id={post_id})", string)
 
         if not groups_event:
@@ -148,16 +148,16 @@ class LikeEvent(Event):
 
 
 class DislikeEvent(Event):
-    def __init__(self, user_id: int, post_id: int, id: Optional[int] = None):
+    def __init__(self, user_id: str, post_id: int, id: Optional[int] = None):
         super().__init__(id=id)
-        self.user_id: int = user_id
+        self.user_id: str = user_id
         self.post_id: int = post_id
 
     def __str__(self) -> str:
         return f"DislikeEvent(user_id={self.user_id}, post_id={self.post_id})"
 
     @classmethod
-    def from_string(cls, string: str, user_id: int) -> 'DislikeEvent':
+    def from_string(cls, string: str, user_id: str) -> 'DislikeEvent':
         groups_event = extract_placeholders("DislikeEvent(user_id={user_id}, post_id={post_id})", string)
 
         if not groups_event:
@@ -182,23 +182,23 @@ class DislikeEvent(Event):
 
 
 class FollowEvent(Event):
-    def __init__(self, follower_id: int, followee_id: int):
+    def __init__(self, follower_id: str, followee_id: str):
         super().__init__()
-        self.follower_id: int = follower_id
-        self.followee_id: int = followee_id
+        self.follower_id: str = follower_id
+        self.followee_id: str = followee_id
 
     def __str__(self) -> str:
         return f"FollowEvent(follower_id={self.follower_id}, followee_id={self.followee_id})"
 
     @classmethod
-    def from_string(cls, string: str, user_id: int) -> 'FollowEvent':
+    def from_string(cls, string: str, user_id: str) -> 'FollowEvent':
         groups_event = extract_placeholders("FollowEvent(follower_id={follower_id}, followee_id={followee_id})", string)
 
         if not groups_event:
             raise ValueError(f"Invalid FollowEvent string: {string}")
 
         try:
-            return FollowEvent(follower_id=user_id, followee_id=int(groups_event["followee_id"]))
+            return FollowEvent(follower_id=user_id, followee_id=groups_event["followee_id"])
         except ValueError as e:
             raise ValueError(f"Invalid FollowEvent string: {string}") from e
 
@@ -215,7 +215,7 @@ class FollowEvent(Event):
         )
 
 
-def parse_event(string: str, user_id: int) -> Event:
+def parse_event(string: str, user_id: str) -> Event:
     event_type: str = string.split("(")[0]
     for event_cls in Event.__subclasses__():
         if event_cls.__name__ == event_type:

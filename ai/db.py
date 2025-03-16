@@ -23,7 +23,7 @@ class DBProxy:
         db = self.client.get_database("test")
 
         result = list(db["agents"].find({"experimentId": ObjectId(experiment_id)}))
-        result = [GPT4AIAgent(experiment_id, agent["name"], agent["instructions"]) for agent in result]
+        result = [GPT4AIAgent(str(agent["_id"]), experiment_id, agent["name"], agent["instructions"]) for agent in result]
         return result
 
 

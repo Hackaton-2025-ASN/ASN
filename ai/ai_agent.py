@@ -5,9 +5,9 @@ from .auto_id import AutoID
 from .event import Event, parse_event, FollowEvent
 
 
-class AIAgent(ABC, AutoID):
-    def __init__(self, experiment_id: str, name: str, instructions: str, image: Optional[bytes] = None):
-        super().__init__()
+class AIAgent(ABC):
+    def __init__(self, id: str, experiment_id: str, name: str, instructions: str, image: Optional[bytes] = None):
+        self.id: str = id
         self.experiment_id: str = experiment_id
         self.name: str = name
         self.image: Optional[bytes] = image
@@ -50,7 +50,6 @@ class AIAgent(ABC, AutoID):
         return result
 
     def filter_invalid_events(self, events: List[Event]) -> List[Event]:
-        # For example: disallow a user following themselves
         return [
             event for event in events
             if not (isinstance(event, FollowEvent) and event.follower_id == event.followee_id)

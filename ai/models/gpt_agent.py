@@ -13,12 +13,13 @@ class GPT4AIAgent(AIAgent):
 
     def __init__(
         self,
+        id: str,
         experiment_id: str,
         name: str,
         instructions: str,
         image: Optional[bytes] = None
     ):
-        super().__init__(experiment_id, name, instructions, image)
+        super().__init__(id, experiment_id, name, instructions, image)
         self.conversation_history: List[dict] = []
         self.client = OpenAI()  # Initialize OpenAI client; expects OPENAI_API_KEY in env variables
 

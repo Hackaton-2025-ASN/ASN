@@ -9,11 +9,11 @@ class LlamaAIAgent(AIAgent):
     model_name: str = "llama-pro"
     context_window: int = 12
 
-    def __init__(self, experiment_id: str, name: str, instructions: str, image: Optional[bytes] = None):
+    def __init__(self, id: str, experiment_id: str, name: str, instructions: str, image: Optional[bytes] = None):
         """
         Initializes the AI agent with a name, persona instructions, and optional profile image.
         """
-        super().__init__(experiment_id, name, instructions, image)
+        super().__init__(id, experiment_id, name, instructions, image)
 
         self.conversation_history = []
 
